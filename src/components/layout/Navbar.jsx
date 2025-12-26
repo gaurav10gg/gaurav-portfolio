@@ -4,10 +4,24 @@ import { motion, AnimatePresence } from 'framer-motion'
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('home')
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50)
+      
+      // Update active section based on scroll position
+      const sections = ['home', 'about', 'projects', 'experience', 'contact']
+      for (const section of sections) {
+        const element = document.getElementById(section)
+        if (element) {
+          const rect = element.getBoundingClientRect()
+          if (rect.top <= 100 && rect.bottom >= 100) {
+            setActiveSection(section)
+            break
+          }
+        }
+      }
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -36,7 +50,7 @@ const Navbar = () => {
       transition={{ duration: 0.6, ease: 'easeOut' }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-lg'
+          ? 'bg-black/80 backdrop-blur-xl border-b border-purple-500/20 shadow-lg shadow-purple-500/10'
           : 'bg-transparent'
       }`}
     >
@@ -50,30 +64,44 @@ const Navbar = () => {
           >
             <button
               onClick={() => scrollToSection('#home')}
-              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+              className="text-2xl font-bold relative group"
             >
-              Portfolio
+              <span className="gradient-text text-3xl">&lt;DEV/&gt;</span>
+              <motion.div
+                className="absolute -inset-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg opacity-0 group-hover:opacity-20 blur-xl transition-opacity"
+                whileHover={{ scale: 1.2 }}
+              />
             </button>
           </motion.div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+            <div className="ml-10 flex items-center space-x-1">
               {navLinks.map((link, index) => (
                 <motion.button
                   key={link.name}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 + 0.3 }}
-                  whileHover={{ y: -2 }}
                   onClick={() => scrollToSection(link.href)}
-                  className={`px-3 py-2 text-sm font-medium transition-colors ${
-                    isScrolled
-                      ? 'text-gray-700 hover:text-blue-600'
-                      : 'text-white hover:text-blue-300'
+                  className={`relative px-4 py-2 text-sm font-medium transition-colors overflow-hidden group ${
+                    activeSection === link.href.slice(1)
+                      ? 'text-purple-400'
+                      : 'text-gray-300 hover:text-white'
                   }`}
                 >
-                  {link.name}
+                  <span className="relative z-10">{link.name}</span>
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    whileHover={{ scale: 1.05 }}
+                  />
+                  {activeSection === link.href.slice(1) && (
+                    <motion.div
+                      layoutId="activeSection"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </motion.button>
               ))}
             </div>
@@ -84,9 +112,7 @@ const Navbar = () => {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`p-2 rounded-md ${
-                isScrolled ? 'text-gray-700' : 'text-white'
-              }`}
+              className="p-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
             >
               <svg
                 className="h-6 w-6"
@@ -123,9 +149,9 @@ const Navbar = () => {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden bg-white/95 backdrop-blur-md overflow-hidden"
+            className="md:hidden bg-black/95 backdrop-blur-xl border-b border-purple-500/20 overflow-hidden"
           >
-            <div className="px-2 pt-2 pb-3 space-y-1">
+            <div className="px-4 pt-2 pb-4 space-y-2">
               {navLinks.map((link, index) => (
                 <motion.button
                   key={link.name}
@@ -133,7 +159,11 @@ const Navbar = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   onClick={() => scrollToSection(link.href)}
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md w-full text-left"
+                  className={`block w-full text-left px-4 py-3 rounded-lg font-medium transition-all ${
+                    activeSection === link.href.slice(1)
+                      ? 'bg-gradient-to-r from-purple-600/30 to-pink-600/30 text-white'
+                      : 'text-gray-300 hover:text-white hover:bg-white/10'
+                  }`}
                 >
                   {link.name}
                 </motion.button>
